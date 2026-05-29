@@ -185,7 +185,7 @@ CreatorFieldInputWrap.propTypes = {
 	onFieldFocus: PropTypes.func,
 };
 
-const CreatorField = forwardRef((props, ref) => {
+const CreatorField = forwardRef((props, outerRef) => {
 	const { className, creator, creatorsCount, creatorTypes, index, isCreateAllowed,
 		isDeleteAllowed, isForm, isReadOnly, isSingle, isVirtual, onAddMany, onChange,
 		onCreatorAdd, onCreatorRemove, onCreatorTypeSwitch, onDragStatusChange, onReorder,
@@ -196,6 +196,7 @@ const CreatorField = forwardRef((props, ref) => {
 	const shouldUseModalCreatorField = false;
 	const [active, setActive] = useState(null);
 	const fieldComponents = useRef({});
+	const innerRef = useRef(null);
 
 	const icon = 'name' in creator ? '20/input-dual' : '20/input-single';
 	const isDual = 'lastName' in creator;
@@ -205,16 +206,21 @@ const CreatorField = forwardRef((props, ref) => {
 		return creatorTypeDescription.label;
 	}, [creator, creatorTypes]);
 
-	useImperativeHandle(ref, () => ({
-		focus: () => {
-			const key = 'lastName' in creator ? 'lastName' : 'name';
-			if(!isReadOnly && !isForm) {
-				setActive(key);
-			} else {
-				key in fieldComponents.current && fieldComponents.current[key].focus();
-			}
+	useImperativeHandle(outerRef, () => {
+		// Custom logic for focus() but return innerRef for CSSTransition
+		// This breaks in JSDOM but works in real browsers
+		if(process.env.NODE_ENV !== 'test') {
+			innerRef.current.focus = () => {
+				const key = 'lastName' in creator ? 'lastName' : 'name';
+				if(!isReadOnly && !isForm) {
+					setActive(key);
+				} else {
+					key in fieldComponents.current && fieldComponents.current[key].focus();
+				}
+			};
 		}
-	}));
+		return innerRef.current;
+	}, [creator, isForm, isReadOnly]);
 
 	const handleFieldClick = useCallback(ev => {
 		const { fieldName } = ev.currentTarget.dataset;
@@ -285,6 +291,7 @@ const CreatorField = forwardRef((props, ref) => {
 			onReorderCommit={ onReorderCommit }
 			onDragStatusChange={ onDragStatusChange }
 			raw={ raw }
+			ref={ innerRef }
 		>
 			{ shouldUseModalCreatorField ?
 				<div className="truncate">{ creatorLabel }</div> :

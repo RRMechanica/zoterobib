@@ -1,7 +1,7 @@
 import cx from 'classnames';
 import deepEqual from 'deep-equal';
 import PropTypes from 'prop-types';
-import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, memo, useCallback, useEffect, useMemo, useRef, useState, createRef } from 'react';
 import CSSTransition from 'react-transition-group/cjs/CSSTransition';
 import { omit } from 'web-common/utils';
 import { usePrevious } from 'web-common/hooks';
@@ -153,12 +153,12 @@ const Creators = props => {
 		if(creators && prevCreators && creators.length > prevCreators.length) {
 			const virtualEntryIndex = creators.findIndex(c => c[Symbol.for('isVirtual')]);
 			if(virtualEntryIndex > -1) {
-				fields.current[virtualEntryIndex].focus();
+				fields.current[virtualEntryIndex].current.focus();
 			}
 		}
 
 		if(focusOnNext.current !== null) {
-			fields.current[focusOnNext.current].focus();
+			fields.current[focusOnNext.current].current.focus();
 			focusOnNext.current = null;
 		}
 	}, [creators, prevCreators]);
@@ -178,14 +178,17 @@ const Creators = props => {
 	}
 
 	return (
-        <Fragment>
-			{ creators.map((creator, index) => (
+		<Fragment>
+			{ creators.map((creator, index) => {
+				let creatorFieldRef = createRef(null);
+				fields.current[index] = creatorFieldRef;
+				return (
 				<CSSTransition
 					key={ creator.id }
 					classNames="color"
 					in={ animateThisRender.includes(index) }
-					enter={ false }
 					timeout={ 600 }
+					nodeRef={ creatorFieldRef }
 				>
 					<CreatorField
 					className={ cx({
@@ -211,13 +214,13 @@ const Creators = props => {
 					onReorder={ handleReorder }
 					onReorderCancel={ handleReorderCancel }
 					onReorderCommit={ handleReorderCommit }
-					ref={ ref => fields.current[index] = ref }
+					ref={ creatorFieldRef }
 					shouldPreOpenModal={ openOnThisRender === index }
 				/>
 				</CSSTransition>
-			))}
+			)})}
 		</Fragment>
-    );
+	);
 }
 
 Creators.propTypes = {
