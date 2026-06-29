@@ -11,9 +11,9 @@ const Footer = props => {
 				<nav className="social-nav">
 					<FormattedMessage
 						id="zbib.footer.follow"
-						defaultMessage="Stay in touch! Follow <link>@zotero</link> on Twitter."
+						defaultMessage="Stay in touch! Follow <link>@zotero</link> on Mastodon."
 						values={ {
-							link: chunk => <a href="https://twitter.com/zotero">{ chunk }</a>  
+							link: chunk => <a href="https://fosstodon.org/@zotero" rel="me noopener noreferrer">{ chunk }</a>
 						} }
 					/>
 				</nav> }
@@ -21,7 +21,7 @@ const Footer = props => {
 				<ul>
 					<li>© 2018–2025 Zotero</li>
 					{isReadOnly && (
-						<li><a href="https://twitter.com/zotero">@zotero</a></li>
+						<li><a href="https://fosstodon.org/@zotero" rel="me noopener noreferrer">@zotero</a></li>
 					)}
 					<li><a href="/faq#privacy">Privacy</a></li>
 				</ul>
